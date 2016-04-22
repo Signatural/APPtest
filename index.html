@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="2Dgame" content="2Dgame">
+    <meta name="description" content="2Dgame">
+
+    <!-- Mobile Stuff -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="msapplication-tap-highlight" content="no">
+
+    <!-- Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="2Dgame" content="2Dgame">
+    <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon.png">
+
+    <!-- Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="2Dgame">
+    <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+
+    <!-- Windows 8 -->
+    <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon.png">
+    <meta name="msapplication-TileColor" content="#FFFFFF">
+
+
+    <meta name="theme-color" content="#000000">
+
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <title>game of rocks</title>
+    <link href='https://fonts.googleapis.com/css?family=Roboto+Condensed:400,300,300italic,400italic,700,700italic' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+        canvas {
+            background: #626fe5;
+        }
+    </style>
+<!--
+<script src="http://d309knd7es5f10.cloudfront.net/zim_1.3.js"></script>
+<script src="http://code.createjs.com/createjs-2014.12.12.min.js"></script>
+<script src="Box2dWeb-2.1.a.3.min.js"></script>
+<script src="phys.js"></script>
+-->
+</head>
+
+<body>
+    <!-- Insert your HTML here -->
+    <canvas id="myCanvas" width="375" height="667"></canvas>
+
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script>
+       var canvas=document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius=20;
+//to move
+
+var x=canvas.width/2;
+var y=canvas.height-30;
+var dx=2;
+var dy=-2;
+var paddleHeight=15;
+var paddleWidth=75;
+var paddleX=(canvas.width-paddleWidth)/2;
+var rightPressed= false;
+var leftPressed=false;
+var brickRowCount = 8;
+var brickColumnCount = 10;
+var brickWidth = 25;
+var brickHeight = 25;
+var brickPadding = 18;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+        ////
+        window.addEventListener("deviceorientation", function (event) {
+        console.log([event.beta, event.gamma]);
+            if (event.gamma > 0) {
+                leftPressed = false;
+                rightPressed = true;
+            } else {
+                rightPressed = false;
+                leftPressed = true;
+            }
+    }, true);
+        ////
+document.addEventListener("keydown",keyDownHandler,false);
+document.addEventListener("keyup",keyUpHandler,false);
+
+var bricks = [];
+for(c=0; c<brickColumnCount; c++) {
+    bricks[c] = [];
+    for(r=0; r<brickRowCount; r++) {
+         bricks[c][r] = { x: 0, y: 0, status: 1 };
+    }
+}
+
+function keyDownHandler(e){
+	if(e.keyCode==39){
+		
+		rightPressed=true;
+		
+		}
+		else if(e.keyCode==37){
+		
+		leftPressed=true;
+		
+		}
+		
+	}
+	
+function keyUpHandler(e){
+	
+	if(e.keyCode==39){
+		
+		rightPressed=false;
+	}
+	else if(e.keyCode==37){
+		
+		leftPressed=false;
+		
+		}
+	}
+
+function drawBall(){
+	ctx.beginPath();
+	ctx.arc(x,y,ballRadius,0,2*Math.PI);
+	ctx.fillstyle="#f00e0e";
+	ctx.fillStroke="#f00e0e";
+	ctx.Stroke="10"
+	ctx.fill();
+	ctx.closePath();
+	}
+
+function drawPaddle(){
+	ctx.beginPath();
+	ctx.rect(paddleX,canvas.height-paddleHeight,paddleWidth,paddleHeight);
+	ctx.fillstyle="#f00e0e";
+	ctx.fill();
+	ctx.closePath();
+	}
+function drawBricks() {
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            if(bricks[c][r].status == 1) {
+                var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
+                var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
+                bricks[c][r].x = brickX;
+                bricks[c][r].y = brickY;
+                ctx.beginPath();
+                ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                ctx.fillStyle = "#f00e0e";
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
+}
+
+function collisionDetection() {
+    for(c=0; c<brickColumnCount; c++) {
+        for(r=0; r<brickRowCount; r++) {
+            var b = bricks[c][r];
+            if(b.status == 1) {
+                if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+                    dy = -dy;
+                    b.status = 0;
+                }
+            }
+        }
+    }
+}
+
+
+function draw(){
+	ctx.clearRect(0,0,canvas.width,canvas.height);
+	drawBricks();
+	drawBall();
+	drawPaddle();
+	collisionDetection();
+ if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+        dx = -dx;
+    }
+    if(y + dy < ballRadius) {
+        dy = -dy;
+    }
+    else if(y + dy > canvas.height-ballRadius) {
+        if(x > paddleX && x < paddleX + paddleWidth) {
+			 if(y= y-paddleHeight){
+            dy = -dy  ;
+			 }
+        }
+        else {
+            alert("GAME OVER");
+            document.location.reload();
+        }
+    }
+	if(rightPressed && paddleX<canvas.width-paddleWidth){
+		
+		paddleX+=7;
+		}
+	 else if(leftPressed && paddleX>0 ){
+		 paddleX-=7;
+		 
+		 }
+		 
+		 x=x+dx;
+	     y=y+dy;
+	}
+
+setInterval(draw,10);
+
+    </script>
+</body>
+
+</html>
